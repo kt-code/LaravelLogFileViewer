@@ -2,11 +2,20 @@
 
 namespace App\Http\Controllers\Log;
 
+use App\Exceptions\LogReaderException;
 use App\Http\Controllers\Controller;
+use App\Traits\LogReader;
 use Illuminate\Http\Request;
 
+/**
+ * TODO: Separate log reading logic from ViewerController.php to a separate helper/service class.
+ * TODO: Cover the newly created helper/service class with PHPUnit tests. Develop unit tests (not feature tests) as described in here: https:/  /laravel.com/docs/5.4/
+ * TODO: Run code coverage report to ensure the newly created class is 100% covered by unit tests.
+ */
 class ViewerController extends Controller
 {
+
+    use LogReader;
 
     /**
      * Log file viewer
@@ -38,41 +47,26 @@ class ViewerController extends Controller
         $data = [];
 
         try {
+            //--Get contents of the file
+            $contents = $this->getContents($path);
 
-            //--Get the contents of the file
-            $fullpath = config('log.dir_path') . ltrim($path, DIRECTORY_SEPARATOR);
-            $mime = \File::mimeType($fullpath);
-            $contents = \File::get($fullpath);
-            $size = \File::size($fullpath);
-            if (str_contains($mime, 'text') == false)
-                $data[] = ['ERROR:', 'Invalid file type'];
-            elseif ($size == 0)
-                $data[] = ['ALERT:', 'File is empty'];
-            else {
-                $contents = explode(PHP_EOL, $contents);
-                $lines = array_slice($contents, $start, $length);
-                for ($i = 0; $i < count($lines); $i++) {
-                    $line = $lines[$i];
-                    if ($line)
-                        // $line = wordwrap($lines[$i], 75, '<br>', true);
-                        $data[] = [($start + $i + 1), $line];
-                }
-            }
-
+            //--Generate line's content
+            $lines = $this->getLines($contents, $start, $length);
         }
         catch (\Exception $e) {
 
-            //--Error retrieving contents of the file
-            $data[] = ['ERROR:', $e->getMessage()];
+            //--Fail to retrieving contents of the file
+            $error = $e instanceof LogReaderException ? 'ALERT' : 'ERROR';
+            $lines[] = ["$error:", $e->getMessage()];
         }
-
 
         //--Ajax's JSON Response
         $resp = [
             "recordsTotal" => count($contents),
             "recordsFiltered" => count($contents),
-            "data" => $data,
+            "data" => $lines,
         ];
         return response()->json($resp);
     }
+
 }

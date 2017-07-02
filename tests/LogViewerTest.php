@@ -2,13 +2,7 @@
 
 class LogViewerTest extends TestCase
 {
-    // /**
-    //  * @return void
-    //  */
-    // public function testExample()
-    // {
-    //     $this->assertTrue(true);
-    // }
+    use \App\Traits\LogFile;
 
     /**
      * @return void
@@ -29,7 +23,7 @@ class LogViewerTest extends TestCase
         ];
         $this->get('/log?' . http_build_query($params))
             // ->seeJson()
-            ->see('ERROR');
+            ->see('ALERT');
     }
 
     /**
@@ -41,7 +35,7 @@ class LogViewerTest extends TestCase
             'path' => '/var/tmp/filename.log',
         ];
         $this->get('/log?' . http_build_query($params))
-            ->see('ERROR');
+            ->see('ALERT');
     }
 
     /**
@@ -53,7 +47,7 @@ class LogViewerTest extends TestCase
             'path' => '../tile.png',
         ];
         $this->get('/log?' . http_build_query($params))
-            ->see('ERROR');
+            ->see('ALERT');
     }
 
     /**
@@ -65,7 +59,7 @@ class LogViewerTest extends TestCase
             'path' => '../tile.png',
         ];
         $this->get('/log?' . http_build_query($params))
-            ->see('ERROR');
+            ->see('ALERT');
     }
 
     /**
@@ -74,11 +68,10 @@ class LogViewerTest extends TestCase
     public function testAjaxToRetrieveFirstPage()
     {
         $params = [
-            'path' => $this->getCorrectFilePath(),
+            'path' => $this->getValidFilePath(),
         ];
-        // dd(http_build_query($params));
         $this->get('/log?' . http_build_query($params))
-            ->dontSee('ERROR');
+            ->dontSee('ALERT');
     }
 
     /**
@@ -88,12 +81,11 @@ class LogViewerTest extends TestCase
     public function testAjaxToRetrieveSecondPage()
     {
         $params = [
-            'path' => $this->getCorrectFilePath(),
+            'path' => $this->getValidFilePath(),
             'start' => $this->getLengthPerPage() + 1,
         ];
-        // dd(http_build_query($params));
         $this->get('/log?' . http_build_query($params))
-            ->dontSee('ERROR');
+            ->dontSee('ALERT');
     }
 
     /**
@@ -103,12 +95,11 @@ class LogViewerTest extends TestCase
     public function testAjaxToRetrieveThirdPage()
     {
         $params = [
-            'path' => $this->getCorrectFilePath(),
+            'path' => $this->getValidFilePath(),
             'start' => $this->getLengthPerPage() * 2 + 1,
         ];
-        // dd(http_build_query($params));
         $this->get('/log?' . http_build_query($params))
-            ->dontSee('ERROR');
+            ->dontSee('ALERT');
     }
 
 
@@ -117,9 +108,9 @@ class LogViewerTest extends TestCase
     //--Protected Functions--//
     //-------------------------
 
-    protected function getCorrectFilePath()
+    protected function getValidFilePath()
     {
-        return config('log.default_file');
+        return self::defaultFilePath();
     }
 
     protected function getLengthPerPage()

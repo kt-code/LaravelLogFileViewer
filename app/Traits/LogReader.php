@@ -17,12 +17,12 @@ trait LogReader
      */
     public function getContents(string $path)
     {
-        $logDirPath = self::logDirPath();
         $path = ltrim($path, DIRECTORY_SEPARATOR);
         if (empty($path))
             throw new LogReaderException('Invalid file path');
 
         //--Filepath is based on the server's log folder which is defined in .env
+        $logDirPath = self::logDirPath();
         $fullpath = $logDirPath . $path;
 
         if(\File::exists($fullpath) == false)
